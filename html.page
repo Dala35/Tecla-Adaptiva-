@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TECLA Adapta PRIME</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .bubble-user { background: #1E40AF; color: white; align-self: flex-end; }
+    .bubble-bot { background: #E5E7EB; color: #111827; align-self: flex-start; }
+    .bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; margin: 5px; }
+    #chat { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; height: 65vh; padding: 1rem; background: #F9FAFB; border-radius: 8px; }
+  </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
+  <div class="w-full max-w-2xl bg-white shadow-lg rounded-2xl p-6">
+    <h1 class="text-2xl font-semibold text-center text-blue-700 mb-4">🧠 TECLA Adapta PRIME</h1>
+    <div id="chat"></div>
+    <div class="mt-4 flex gap-2">
+      <input id="userInput" type="text" placeholder="Fale com TECLA..." class="flex-1 border rounded-xl p-2 outline-none focus:ring-2 focus:ring-blue-500">
+      <button id="sendBtn" class="bg-blue-600 text-white rounded-xl px-4 py-2 hover:bg-blue-700">Enviar</button>
+    </div>
+    <p id="status" class="text-sm text-gray-500 text-center mt-2">Conectado ao backend mock ⚙️</p>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('userInput');
+    const btn = document.getElementById('sendBtn');
+
+    function appendMessage(text, sender = 'bot') {
+      const div = document.createElement('div');
+      div.className = `bubble ${sender === 'user' ? 'bubble-user self-end' : 'bubble-bot self-start'}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage(text, 'user');
+      input.value = '';
+      try {
+        const res = await fetch('/api/respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text })
+        });
+        const data = await res.json();
+        appendMessage(data.reply || 'Sem resposta...');
+      } catch (err) {
+        appendMessage('❌ Erro de conexão ao servidor mock.');
+      }
+    }
+
+    btn.onclick = sendMessage;
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+  </script>
+</body>
+</html>
