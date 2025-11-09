@@ -1,55 +1,23 @@
-// server.js
-import express from "express";
-import fs from "fs";
-import path from "path";
-import cors from "cors";
-import bodyParser from "body-parser";
-
+const express = require('express');
+const fs = require('fs');
 const app = express();
-const PORT = process.env.PORT || 3000;
-const __dirname = path.resolve();
-const DATA_FILE = path.join(__dirname, "data.json");
+const PORT = 3000;
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(__dirname)); // serve o index.html
+app.use(express.json());
+app.use(express.static('.'));
 
-// Inicializa o ficheiro de dados
-if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify([]));
-
-// 🔹 Endpoint principal: simula resposta de IA
-app.post("/api/respond", (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.json({ reply: "Por favor, envie uma mensagem válida." });
-
-  const responses = [
-    "Interessante! Podes explicar mais sobre isso?",
-    "Compreendo. Posso adaptar a resposta para ti.",
-    "Isso parece importante. Vamos refletir juntos.",
-    "Sou TECLA Adapta PRIME — a tua inteligência criativa local 🌍"
-  ];
-  const reply = responses[Math.floor(Math.random() * responses.length)];
-  res.json({ reply });
+app.get('/data.json', (req,res)=>{
+  fs.readFile('data.json','utf8',(err,data)=>{
+    if(err) return res.json({});
+    res.json(JSON.parse(data));
+  });
 });
 
-// 🔹 Salva novo aprendizado
-app.post("/api/save", (req, res) => {
-  const { question, answer } = req.body;
-  if (!question || !answer) return res.status(400).json({ message: "Campos obrigatórios." });
-
-  const data = JSON.parse(fs.readFileSync(DATA_FILE));
-  data.push({ question, answer });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-  res.json({ message: "Aprendizado salvo com sucesso." });
+app.post('/save',(req,res)=>{
+  fs.writeFile('data.json',JSON.stringify(req.body,null,2),'utf8',err=>{
+    if(err) return res.status(500).send('Erro ao salvar');
+    res.send('OK');
+  });
 });
 
-// 🔹 Retorna dados simulados
-app.get("/api/data", (req, res) => {
-  const data = JSON.parse(fs.readFileSync(DATA_FILE));
-  res.json(data);
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor mock TECLA rodando em http://localhost:${PORT}`);
-});
+app.listen(PORT, ()=>console.log(`Servidor rodando em http://localhost:${PORT}`));
