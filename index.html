@@ -1,47 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TECLA Adapta PRIME – IA Inclusiva</title>
 <style>
-  body { margin:0; font-family:'Segoe UI',sans-serif; background:#1e1e1e; color:#fff; display:flex; flex-direction:column; height:100vh; }
-  header { background:#005b99; padding:1rem; text-align:center; }
-  nav { display:flex; justify-content:space-between; background:#007acc; padding:0.5rem; flex-wrap:wrap; }
-  nav button, #perfilSelect { background:transparent; border:none; color:white; padding:0.5rem 1rem; font-size:1rem; cursor:pointer; border-radius:6px; }
-  nav button:hover, #perfilSelect:hover { background-color:#3399ff; }
-  main { flex:1; padding:1rem; overflow-y:auto; }
-  .tab { display:none; }
-  .chat-container { display:flex; flex-direction:column; gap:0.5rem; }
-  .user-msg, .bot-msg { max-width:75%; padding:0.75rem; border-radius:12px; font-size:1rem; line-height:1.4; }
-  .user-msg { align-self:flex-end; background:#2a2a2a; }
-  .bot-msg { align-self:flex-start; background:#333; }
-  footer { padding:0.5rem; background:#222; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
-  input, select { flex:1; padding:0.75rem; font-size:1rem; border:1px solid #555; border-radius:6px; background:#111; color:#fff; }
-  button.send, .emo-btn { padding:0.75rem 1rem; background:#0077cc; color:white; border:none; border-radius:6px; cursor:pointer; font-size:1rem; }
-  .emo-btn { font-size:1.2rem; background-color:#005fa3; }
-  button.send:hover, .emo-btn:hover { background-color:#004f8a; }
-  /* Painel de gestão de conhecimento */
-  table { width:100%; border-collapse:collapse; margin-top:1rem; }
-  th, td { padding:0.5rem; border:1px solid #555; text-align:left; font-size:0.9rem; }
-  th { background:#333; }
-  td { background:#222; }
-  button.edit, button.delete { padding:0.2rem 0.5rem; margin:0 0.2rem; cursor:pointer; font-size:0.8rem; border:none; border-radius:4px; }
-  button.edit { background:#3399ff; color:#fff; }
-  button.delete { background:#ff5555; color:#fff; }
+  body{margin:0;font-family:'Segoe UI',sans-serif;background:#111;color:#fff;display:flex;flex-direction:column;height:100vh;font-size:18px}
+  header{background:#005b99;padding:1rem;text-align:center;font-weight:bold;}
+  nav{display:flex;justify-content:space-between;background:#007acc;padding:.5rem;flex-wrap:wrap;}
+  nav button, #perfilSelect{background:transparent;border:none;color:white;padding:.5rem 1rem;font-size:1rem;cursor:pointer;border-radius:6px;}
+  nav button:hover,#perfilSelect:hover{background-color:#3399ff;}
+  main{flex:1;padding:1rem;overflow-y:auto;}
+  .chat-container{display:flex;flex-direction:column;gap:.5rem;}
+  .user-msg,.bot-msg{max-width:75%;padding:.75rem;border-radius:12px;font-size:18px;line-height:1.4;}
+  .user-msg{align-self:flex-end;background-color:#0066cc;}
+  .bot-msg{align-self:flex-start;background-color:#333;}
+  footer{padding:.5rem;background:#222;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;}
+  input,select{flex:1;padding:.75rem;font-size:1rem;border:1px solid #999;border-radius:6px;}
+  button.send,.emo-btn{padding:.75rem 1rem;background:#0077cc;color:white;border:none;border-radius:6px;cursor:pointer;font-size:1rem;}
+  .emo-btn{font-size:1.2rem;background-color:#005fa3;}
+  button.send:hover,.emo-btn:hover{background-color:#004f8a;}
+  table{width:100%;border-collapse:collapse;margin-top:1rem;color:#fff;}
+  th,td{border:1px solid #555;padding:.3rem .5rem;text-align:left;font-family:monospace;}
+  th{background:#222;}
+  td button{background:red;color:#fff;border:none;padding:.2rem .5rem;border-radius:4px;cursor:pointer;}
 </style>
 </head>
 <body>
-<header>
-  <h1>TECLA Adapta PRIME – IA Inclusiva</h1>
-</header>
-
+<header>TECLA Adapta PRIME – IA Inclusiva</header>
 <nav>
   <div>
     <button onclick="showTab('chat')">💬 Conversar</button>
     <button onclick="showTab('sobre')">ℹ️ Sobre</button>
-    <button onclick="showTab('ajuda')">🧭 Ajuda</button>
-    <button onclick="showTab('painel')">🗂️ Gestão</button>
+    <button onclick="showTab('painel')">📊 Gestão Conhecimento</button>
   </div>
   <div>
     <select id="perfilSelect" onchange="trocarPerfil()">
@@ -52,79 +43,61 @@
   </div>
 </nav>
 
-<main id="chat" class="tab" style="display:block">
+<main id="chat" class="tab">
   <div class="chat-container" id="chatBox"></div>
 </main>
 
-<main id="sobre" class="tab">
+<main id="sobre" class="tab" style="display:none">
   <h2>Sobre o TECLA</h2>
-  <p>TECLA Adapta é um projeto criado por Dala De Carvalho para apoio à comunicação de pessoas com autismo ou dificuldades verbais.</p>
+  <p>Projeto de apoio à comunicação de pessoas com autismo.</p>
 </main>
 
-<main id="ajuda" class="tab">
-  <h2>Como Usar</h2>
-  <p>Digite, fale ou clique nos emojis para interagir. Se eu não souber algo, posso aprender!</p>
-</main>
-
-<main id="painel" class="tab">
+<main id="painel" class="tab" style="display:none">
   <h2>Painel de Gestão do Conhecimento</h2>
-  <table id="knowledgeTable">
-    <thead>
-      <tr><th>Chave</th><th>Resposta</th><th>Ações</th></tr>
-    </thead>
+  <table id="painelTable">
+    <thead><tr><th>Frase</th><th>Resposta</th><th>Ação</th></tr></thead>
     <tbody></tbody>
   </table>
 </main>
 
 <footer>
-  <input type="text" id="userInput" placeholder="Digite ou fale aqui..." onkeypress="if(event.key==='Enter') sendMessage()"/>
+  <input type="text" id="userInput" placeholder="Digite aqui..." onkeypress="if(event.key==='Enter') sendMessage()"/>
   <button class="send" onclick="sendMessage()">Enviar</button>
   <button class="send" onclick="startListening()">🎙️ Falar</button>
-  <button class="emo-btn" onclick="quickSay('🙂 Estou feliz')">🙂</button>
-  <button class="emo-btn" onclick="quickSay('😢 Estou triste')">😢</button>
-  <button class="emo-btn" onclick="quickSay('😡 Estou zangado')">😡</button>
-  <button class="emo-btn" onclick="quickSay('🧡 Quero um abraço')">🧡</button>
-  <button onclick="baixarDados()">⬇️ Exportar</button>
-  <button onclick="document.getElementById('backupFile').click()">⬆️ Importar</button>
-  <input type="file" id="backupFile" style="display:none" onchange="lerBackup(this)">
+  <select id="vozSelect" title="Selecionar voz"></select>
 </footer>
 
 <script>
-let perfilAtual = "padrao";
-let respostas = {};
+let perfilAtual="padrao";
+let respostas={};
+const chatBox=document.getElementById('chatBox');
 
-function showTab(id) {
-  document.querySelectorAll("main.tab").forEach(el => el.style.display="none");
-  document.getElementById(id).style.display="block";
+async function carregarRespostas(){
+  try{
+    const resp=await fetch('/data.json');
+    respostas=await resp.json();
+    atualizarPainel();
+  }catch(e){respostas={};}
 }
+carregarRespostas();
 
-function carregarRespostas() {
-  fetch('/data.json')
-    .then(res=>res.json())
-    .then(data=>{
-      respostas = data[perfilAtual] || {};
-      atualizarPainel();
-    });
-}
-
-function salvarRespostas() {
-  fetch('/save',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({[perfilAtual]:respostas})
-  }).then(()=>carregarRespostas());
+function showTab(id){
+  document.querySelectorAll('main.tab').forEach(el=>el.style.display='none');
+  document.getElementById(id).style.display='block';
 }
 
 function addMessage(msg,sender){
   const el=document.createElement('div');
   el.className=sender==='user'?'user-msg':'bot-msg';
   el.textContent=msg;
-  document.getElementById('chatBox').appendChild(el);
-  document.getElementById('chatBox').scrollTop=document.getElementById('chatBox').scrollHeight;
+  chatBox.appendChild(el);
+  chatBox.scrollTop=chatBox.scrollHeight;
 }
 
 function falar(texto){
+  if(!texto) return;
   const synth=window.speechSynthesis;
+  synth.cancel();
   const utter=new SpeechSynthesisUtterance(texto);
   utter.lang="pt-PT";
   synth.speak(utter);
@@ -135,12 +108,26 @@ function sendMessage(){
   const texto=input.value.trim();
   if(!texto) return;
   addMessage('👤 '+texto,'user');
-  if(respostas[texto]){
-    addMessage('🤖 '+respostas[texto],'bot');
-    falar(respostas[texto]);
+
+  let resposta=respostas[texto];
+
+  if(!resposta){
+    const chaves=Object.keys(respostas);
+    for(let chave of chaves){
+      if(texto.toLowerCase().includes(chave.toLowerCase())){
+        resposta=respostas[chave];
+        break;
+      }
+    }
+  }
+
+  if(resposta){
+    addMessage('🤖 '+resposta,'bot');
+    falar(resposta);
   }else{
     const pergunta='❓ Não sei responder. Deseja ensinar-me?';
     addMessage(pergunta,'bot');
+    falar(pergunta);
     setTimeout(()=>{
       const ensino=prompt("Digite a resposta para: "+texto);
       if(ensino){
@@ -152,16 +139,27 @@ function sendMessage(){
     },500);
   }
   input.value='';
+  atualizarPainel();
 }
 
-function quickSay(texto){document.getElementById('userInput').value=texto; sendMessage();}
 function startListening(){
   const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){alert("Seu navegador não suporta voz."); return;}
+  if(!SpeechRecognition){alert("Seu navegador não suporta voz.");return;}
   const recognition=new SpeechRecognition();
-  recognition.lang='pt-PT';
-  recognition.onresult=(e)=>{document.getElementById('userInput').value=e.results[0][0].transcript; sendMessage();}
+  recognition.lang="pt-PT";
+  recognition.onresult=(event)=>{
+    document.getElementById('userInput').value=event.results[0][0].transcript;
+    sendMessage();
+  };
   recognition.start();
+}
+
+function salvarRespostas(){
+  fetch('/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(respostas)
+  });
 }
 
 function trocarPerfil(){
@@ -169,38 +167,41 @@ function trocarPerfil(){
   carregarRespostas();
 }
 
-// ======= Painel de gestão =======
 function atualizarPainel(){
-  const tbody=document.querySelector('#knowledgeTable tbody');
+  const tbody=document.querySelector('#painelTable tbody');
   tbody.innerHTML='';
-  Object.keys(respostas).forEach(chave=>{
+  for(let chave in respostas){
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${chave}</td><td>${respostas[chave]}</td>
-      <td>
-        <button class="edit" onclick="editarChave('${chave}')">Editar</button>
-        <button class="delete" onclick="excluirChave('${chave}')">Excluir</button>
-      </td>`;
+    const td1=document.createElement('td');
+    td1.textContent=chave;
+    const td2=document.createElement('td');
+    td2.textContent=respostas[chave];
+    const td3=document.createElement('td');
+    const btn=document.createElement('button');
+    btn.textContent='❌';
+    btn.onclick=()=>{delete respostas[chave];salvarRespostas();atualizarPainel();}
+    td3.appendChild(btn);
+    tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);
     tbody.appendChild(tr);
-  });
-}
-
-function editarChave(chave){
-  const nova=prompt('Editar resposta para: '+chave,respostas[chave]);
-  if(nova){
-    respostas[chave]=nova;
-    salvarRespostas();
   }
 }
 
-function excluirChave(chave){
-  if(confirm('Excluir "'+chave+'"?')){
-    delete respostas[chave];
-    salvarRespostas();
+// Popular vozes
+function popularVozes(){
+  const synth=window.speechSynthesis;
+  synth.onvoiceschanged=()=>{ 
+    const select=document.getElementById('vozSelect');
+    select.innerHTML='';
+    const vozes=synth.getVoices().filter(v=>v.lang.includes('pt'));
+    vozes.forEach(v=>{
+      const opt=document.createElement('option');
+      opt.value=v.name;
+      opt.textContent=v.name;
+      select.appendChild(opt);
+    });
   }
 }
-
-// Inicializa
-carregarRespostas();
+popularVozes();
 </script>
 </body>
 </html>
