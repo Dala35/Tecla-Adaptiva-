@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TECLA Adapta PRIME — Offline</title>
+<style>
+  :root{
+    --bg:#06111a; --card:#091826; --muted:#98a8b9; --accent:#06d6a0;
+    --happy:#fff7c2; --sad:#d7efff; --angry:#ffd6d6; --calm:#dfffe6; --curious:#f3e8ff;
+    --anxious:#fff3d9; --hungry:#fff0e0; --sleepy:#eef7ff; --neutral:#f4f4f5;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", system-ui, -apple-system, sans-serif;background:linear-gradient(180deg,#03121a,#071826);color:#e6eef6}
+  .app{max-width:1100px;margin:28px auto;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:1fr 360px;gap:18px;padding:18px;min-height:78vh}
+  header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--card);border-radius:10px}
+  header h1{margin:0;font-size:18px;color:var(--accent)}
+  .chat-area{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px;display:flex;flex-direction:column;height:calc(78vh - 120px)}
+  .chat-window{flex:1;padding:10px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+  .composer{display:flex;gap:8px;padding-top:8px;align-items:center}
+  .composer input[type="text"]{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#041826;color:#e6eef6}
+  .btn{background:var(--accent);color:#022128;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .msg{max-width:78%;padding:10px 14px;border-radius:14px;font-size:15px;line-height:1.3;word-break:break-word;box-shadow:0 6px 18px rgba(2,6,23,.5)}
+  .msg.user{align-self:flex-end;background:#08304b;color:#fff;border-bottom-right-radius:4px}
+  .msg.bot{align-self:flex-start;background:var(--neutral);color:#071424;border-bottom-left-radius:4px}
+  /* emotion styles */
+  .emotion-happy{background:var(--happy);color:#2b2b1b}
+  .emotion-sad{background:var(--sad);color:#06324a}
+  .emotion-angry{background:var(--angry);color:#4a0707}
+  .emotion-calm{background:var(--calm);color:#0b3d1f}
+  .emotion-curious{background:var(--curious);color:#3b2853}
+  .emotion-anxious{background:var(--anxious);color:#4a3000}
+  .emotion-hungry{background:var(--hungry);color:#4a2a00}
+  .emotion-sleepy{background:var(--sleepy);color:#073057}
+  .emotion-neutral{background:var(--neutral);color:#071424}
+
+  /* right panel */
+  .side{background:var(--card);padding:12px;border-radius:10px;height:calc(78vh - 24px);display:flex;flex-direction:column;gap:12px}
+  .panel-card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));padding:10px;border-radius:8px}
+  .panel-card h3{margin:0 0 8px 0;color:var(--accent);font-size:14px}
+  .k-list{overflow:auto;max-height:40vh;display:flex;flex-direction:column;gap:8px}
+  .k-item{display:flex;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
+  .k-item small{color:var(--muted)}
+  .controls{display:flex;gap:8px;align-items:center}
+  .small{font-size:13px;color:var(--muted)}
+  footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:10px 14px;background:transparent;color:var(--muted)}
+  .badge{font-size:12px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted)}
+  select,input[type="range"]{background:#071427;border:1px solid rgba(255,255,255,0.04);color:#e6eef6;padding:6px;border-radius:6px}
+  .action-row{display:flex;gap:8px;flex-wrap:wrap}
+  .icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;color:var(--muted);cursor:pointer}
+  .icon-btn:hover{color:#fff;border-color:rgba(255,255,255,0.08)}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:6px;border-bottom:1px solid rgba(255,255,255,0.02);font-family:monospace;font-size:13px}
+  @media(max-width:1000px){.app{grid-template-columns:1fr;min-height:85vh}.side{height:auto}}
+</style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="TECLA Adapta PRIME Offline">
+    <header>
+      <h1>🧠 TECLA Adapta PRIME — Offline & Acessível</h1>
+      <div style="display:flex;gap:8px;align-items:center">
+        <label class="small">Voz</label>
+        <select id="vozSelect" title="Selecionar voz"></select>
+        <label class="small">Vel</label>
+        <input id="rate" type="range" min="0.6" max="1.6" step="0.1" value="1" />
+        <label class="small">Tom</label>
+        <input id="pitch" type="range" min="0.7" max="1.4" step="0.1" value="1" />
+      </div>
+    </header>
+
+    <main class="chat-area" role="main">
+      <div class="chat-window" id="chatWindow" role="log" aria-live="polite"></div>
+
+      <div class="composer" role="form" aria-label="Composer">
+        <input type="text" id="userInput" placeholder="Digite ou pressione 🎙 e fale..." aria-label="Mensagem" />
+        <button class="btn" id="sendBtn">Enviar</button>
+        <button class="btn secondary" id="voiceBtn" title="Reconhecimento de fala">🎙️</button>
+        <button class="btn secondary" id="teachBtn" title="Ensinar manualmente">📘 Ensinar</button>
+      </div>
+    </main>
+
+    <aside class="side" aria-hidden="false">
+      <div class="panel-card">
+        <h3>Estado atual</h3>
+        <div id="currentEmotion" style="font-weight:600">Emoção: <span style="color:var(--accent)">Neutro</span></div>
+        <div style="margin-top:8px;font-size:13px;color:var(--muted)">Palavras-chave detectam emoção; também podes usar o painel para gerir respostas.</div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Painel de Conhecimento</h3>
+        <div class="k-list" id="knowledgeList" aria-live="polite"></div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="icon-btn" id="importBtn">⬆️ Importar</button>
+          <button class="icon-btn" id="exportBtn">⬇️ Exportar</button>
+          <input id="fileInput" type="file" accept=".json" style="display:none" />
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Atalhos rápidos</h3>
+        <div class="action-row">
+          <button class="icon-btn" onclick="quick('estou feliz')">🙂 Feliz</button>
+          <button class="icon-btn" onclick="quick('estou triste')">😢 Triste</button>
+          <button class="icon-btn" onclick="quick('preciso de ajuda')">🆘 Ajuda</button>
+          <button class="icon-btn" onclick="quick('quero descansar')">😴 Descansar</button>
+        </div>
+      </div>
+    </aside>
+
+    <footer>
+      <div class="small">TECLA Adapta PRIME — Offline</div>
+      <div class="small">Dala De Carvalho — Educador Musical</div>
+    </footer>
+  </div>
+
+<script>
+/* ---------- Configurações e estado ---------- */
+const VOZ_KEY = 'tecla_respostas_v2'; // localStorage key
+let respostas = {}; // { chave_normalizada: "resposta" }
+const chatWindow = document.getElementById('chatWindow');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const voiceBtn = document.getElementById('voiceBtn');
+const teachBtn = document.getElementById('teachBtn');
+const knowledgeList = document.getElementById('knowledgeList');
+const importBtn = document.getElementById('importBtn');
+const exportBtn = document.getElementById('exportBtn');
+const fileInput = document.getElementById('fileInput');
+const vozSelect = document.getElementById('vozSelect');
+const rateControl = document.getElementById('rate');
+const pitchControl = document.getElementById('pitch');
+const currentEmotion = document.getElementById('currentEmotion');
+
+/* util: normalizar texto (minusculas sem acentos) */
+function normalize(text){
+  return String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+
+/* carregar/guardar */
+function loadKnowledge(){
+  try{
+    const raw = localStorage.getItem(VOZ_KEY);
+    respostas = raw ? JSON.parse(raw) : {};
+  }catch(e){
+    respostas = {};
+  }
+  renderKnowledge();
+}
+function saveKnowledge(){
+  try{ localStorage.setItem(VOZ_KEY, JSON.stringify(respostas)); }catch(e){ console.warn('Erro ao salvar localStorage', e); }
+  renderKnowledge();
+}
+
+/* ---------- Emoção (keywords) ---------- */
+const emotionKeywords = {
+  happy: ['feliz','alegre','otimo','bom','adoro','sorrir','maravilha','animado','legal'],
+  sad: ['triste','sinto','chorar','solitario','deprimido','nao consigo','sofrer','tristeza'],
+  angry: ['zangado','raiva','irritado','furioso','raiva','chateado'],
+  calm: ['calmo','relaxar','tranquilo','sereno','respira','respirar','paz'],
+  curious: ['como','o que','por que','explica','quero aprender','perguntar'],
+  anxious: ['ansioso','preocupado','nervoso','tenso','ansiedade'],
+  hungry: ['fome','estou com fome','comer','comida','almoco','jantar','lanche'],
+  sleepy: ['sono','cansado','dormir','sonolento','exausto']
+};
+
+const emotionMap = {
+  happy: {cls:'emotion-happy', label:'Feliz'},
+  sad: {cls:'emotion-sad', label:'Triste'},
+  angry: {cls:'emotion-angry', label:'Zangado'},
+  calm: {cls:'emotion-calm', label:'Calmo'},
+  curious: {cls:'emotion-curious', label:'Curioso'},
+  anxious: {cls:'emotion-anxious', label:'Ansioso'},
+  hungry: {cls:'emotion-hungry', label:'Com fome'},
+  sleepy: {cls:'emotion-sleepy', label:'Sonolento'},
+  neutral: {cls:'emotion-neutral', label:'Neutro'}
+};
+
+function detectEmotion(text){
+  const t = normalize(text);
+  for(const [emo, arr] of Object.entries(emotionKeywords)){
+    for(const w of arr){
+      if(t.includes(normalize(w))) return emo;
+    }
+  }
+  // heurística: pergunta -> curioso
+  if(t.endsWith('?') || t.startsWith('como ') || t.startsWith('o que ') || t.startsWith('por que ')) return 'curious';
+  return 'neutral';
+}
+
+/* ---------- UI: mensagens ---------- */
+function appendUser(text){
+  const d = document.createElement('div'); d.className='msg user'; d.textContent = '🧑 ' + text;
+  chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+function appendBot(text, emotion='neutral'){
+  const d = document.createElement('div'); d.className = 'msg bot ' + (emotionMap[emotion] ? emotionMap[emotion].cls : emotionMap['neutral'].cls);
+  d.textContent = '🤖 ' + text;
+  chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight;
+  // atualizar painel estado
+  currentEmotion.innerHTML = `Emoção: <span style="color:var(--accent)">${emotionMap[emotion].label}</span>`;
+  // falar
+  speak(text);
+}
+
+/* ---------- TTS: vozes ---------- */
+function populateVoices(){
+  const synth = window.speechSynthesis;
+  const voices = synth.getVoices();
+  vozSelect.innerHTML = '';
+  // preferir vozes pt
+  let added = 0;
+  voices.filter(v=>/pt(-|_)?/i.test(v.lang)).forEach(v=>{
+    const opt = document.createElement('option'); opt.value = v.name; opt.textContent = `${v.name} — ${v.lang}`; vozSelect.appendChild(opt); added++;
+  });
+  if(added===0){ // fallback
+    voices.slice(0,6).forEach(v=>{ const opt=document.createElement('option'); opt.value=v.name; opt.textContent=`${v.name} — ${v.lang}`; vozSelect.appendChild(opt); });
+  }
+}
+window.speechSynthesis.onvoiceschanged = populateVoices;
+populateVoices();
+
+function speak(text){
+  if(!text) return;
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const sel = vozSelect.value;
+  if(sel){
+    const voice = synth.getVoices().find(v=>v.name===sel);
+    if(voice) u.voice = voice;
+  }
+  u.rate = parseFloat(rateControl.value || 1);
+  u.pitch = parseFloat(pitchControl.value || 1);
+  // preferir português
+  u.lang = 'pt-PT';
+  synth.speak(u);
+}
+
+/* ---------- Busca inteligente (match) ---------- */
+function normalizedLookup(raw){
+  const key = normalize(raw);
+  if(respostas[key]) return respostas[key];
+
+  // buscar por includes - priorizar chaves mais longas (mais específicas)
+  const keys = Object.keys(respostas).sort((a,b)=>b.length - a.length);
+  for(const k of keys){
+    if(key.includes(k) || k.includes(key)) return respostas[k];
+  }
+
+  // buscar por palavras individuais (OR)
+  const words = key.split(/\s+/).filter(Boolean);
+  for(const k of keys){
+    const kwords = k.split(/\s+/);
+    let common = 0;
+    for(const w of words) if(kwords.includes(w)) common++;
+    if(common >= Math.max(1, Math.floor(kwords.length/2))) return respostas[k];
+  }
+
+  return null;
+}
+
+/* ---------- Lógica principal ---------- */
+async function handleSend(raw){
+  const text = String(raw || '').trim();
+  if(!text) return;
+  appendUser(text);
+
+  const emo = detectEmotion(text);
+  let answer = normalizedLookup(text);
+
+  if(answer){
+    appendBot(answer, emo);
+    return;
+  }
+
+  // perguntar se quer ensinar
+  appendBot('❓ Não sei responder. Deseja ensinar-me?', 'curious');
+
+  setTimeout(()=>{
+    const teach = confirm('Deseja ensinar a TECLA a responder a: "' + text + '" ?');
+    if(!teach){ appendBot('Tudo bem — podes ensinar depois pelo painel.', 'calm'); return; }
+    const resp = prompt('Digite a resposta que TECLA deve dizer:');
+    if(resp && resp.trim()){
+      respostas[normalize(text)] = resp.trim();
+      saveKnowledge();
+      appendBot('✔️ Aprendi: ' + resp.trim(), 'happy');
+    } else {
+      appendBot('Entendi — nada foi salvo.', 'calm');
+    }
+  }, 200);
+}
+
+/* ---------- Eventos UI ---------- */
+sendBtn.addEventListener('click', ()=>{ handleSend(userInput.value); userInput.value=''; });
+userInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ handleSend(userInput.value); userInput.value=''; }});
+
+voiceBtn.addEventListener('click', ()=>{
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){ alert('Reconhecimento de voz não suportado neste navegador. Use Chrome/Edge'); return; }
+  const rec = new SpeechRecognition();
+  rec.lang = 'pt-PT';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  rec.onresult = (ev)=>{ const t = ev.results[0][0].transcript; userInput.value = t; handleSend(t); };
+  rec.onerror = (ev)=>{ console.warn('Speech error', ev); alert('Erro de reconhecimento de voz'); };
+  rec.start();
+});
+
+/* botão ensinar */
+teachBtn.addEventListener('click', ()=>{
+  const q = prompt('Pergunta (o que o utilizador diz):');
+  if(!q) return;
+  const a = prompt('Resposta (o que TECLA deve dizer):');
+  if(!a) return;
+  respostas[normalize(q)] = a;
+  saveKnowledge();
+  appendBot('✔️ Aprendi manualmente: ' + a, 'happy');
+});
+
+/* quick shortcuts */
+function quick(text){ userInput.value = text; handleSend(text); }
+
+/* ---------- Painel de conhecimento (render, importar, exportar, editar, deletar) ---------- */
+function renderKnowledge(){
+  knowledgeList.innerHTML = '';
+  const keys = Object.keys(respostas).sort();
+  if(keys.length===0){
+    knowledgeList.innerHTML = '<div style="color:var(--muted)">Sem conteúdos carregados.</div>';
+    return;
+  }
+  keys.forEach(k=>{
+    const item = document.createElement('div'); item.className='k-item';
+    const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:600">${k}</div><small>${(String(respostas[k]||'')).slice(0,80)}${(String(respostas[k]||'')).length>80?'...':''}</small>`;
+    const right = document.createElement('div');
+    const editBtn = document.createElement('button'); editBtn.textContent='✏️'; editBtn.className='icon-btn';
+    editBtn.onclick = async ()=>{ const n = prompt('Editar resposta para: '+k, respostas[k]); if(n){ respostas[k]=n; saveKnowledge(); renderKnowledge(); } };
+    const delBtn = document.createElement('button'); delBtn.textContent='🗑️'; delBtn.className='icon-btn';
+    delBtn.onclick = async ()=>{ if(confirm('Remover "'+k+'"?')){ delete respostas[k]; saveKnowledge(); renderKnowledge(); } };
+    right.appendChild(editBtn); right.appendChild(delBtn);
+    item.appendChild(left); item.appendChild(right);
+    knowledgeList.appendChild(item);
+  });
+}
+
+/* import/export handlers */
+importBtn.addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', (ev)=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=> {
+    try{
+      const parsed = JSON.parse(reader.result);
+      // merge normalizando chaves
+      for(const k in parsed){
+        const v = parsed[k];
+        const val = (v && typeof v==='object' && v.resposta) ? v.resposta : v;
+        respostas[normalize(k)] = val;
+      }
+      saveKnowledge();
+      renderKnowledge();
+      alert('Importação concluída.');
+    }catch(e){ alert('JSON inválido'); }
+  };
+  reader.readAsText(f);
+});
+
+exportBtn.addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(respostas,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='treinamento_tecla.json'; a.click();
+});
+
+/* ---------- Inicialização ---------- */
+loadKnowledge();
+renderKnowledge();
+
+/* expose for debugging */
+window._TECLA = { respostas, loadKnowledge, saveKnowledge, detectEmotion };
+
+/* salvar no unload */
+window.addEventListener('beforeunload', ()=>{ try{ localStorage.setItem(VOZ_KEY, JSON.stringify(respostas)); }catch{} });
+
+</script>
+</body>
+</html>
