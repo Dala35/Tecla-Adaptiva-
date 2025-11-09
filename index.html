@@ -17,13 +17,11 @@
   header .controls{display:flex;gap:8px;align-items:center}
   header select,input[type="range"]{background:#071427;border:1px solid rgba(255,255,255,0.04);color:#e6eef6;padding:6px;border-radius:6px}
   main{flex:1;display:flex;gap:12px;padding:16px}
-  /* left chat */
   .chat-wrap{flex:1;display:flex;flex-direction:column;gap:12px}
   .chat-window{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:10px;padding:14px;overflow:auto;display:flex;flex-direction:column;gap:10px}
   .msg{max-width:78%;padding:10px 14px;border-radius:14px;font-size:15px;line-height:1.3;box-shadow:0 4px 14px rgba(2,6,23,.35);word-break:break-word}
   .msg.user{align-self:flex-end;background:#052c4f;color:#fff;border-bottom-right-radius:4px}
   .msg.bot{align-self:flex-start;background:#ffffff;color:#081424;border-bottom-left-radius:4px}
-  /* emotion classes for bot */
   .emotion-happy{background:var(--happy-bg); color:#1a1a1a}
   .emotion-sad{background:var(--sad-bg); color:#06324a}
   .emotion-angry{background:var(--angry-bg); color:#2e0505}
@@ -33,12 +31,10 @@
   .emotion-hungry{background:#fff0e0;color:#4a2a00}
   .emotion-sleepy{background:#f0f7ff;color:#073057}
   .emotion-neutral{background:var(--neutral-bg); color:#081424}
-  /* input */
   .composer{display:flex;gap:8px;padding-top:8px;align-items:center}
   .composer input[type="text"]{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#081727;color:#e6eef6}
   .btn{background:var(--accent);color:#022128;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
   .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted)}
-  /* right panel */
   .side{width:320px;background:linear-gradient(180deg,#071a2a,#04121a);border-left:1px solid rgba(255,255,255,0.02);padding:12px;display:flex;flex-direction:column;gap:12px}
   .panel-card{background:rgba(255,255,255,0.02);padding:10px;border-radius:10px}
   .panel-card h3{margin:0 0 8px 0;color:var(--accent);font-size:14px}
@@ -114,7 +110,6 @@
   </div>
 
 <script>
-/* ========== Configuração inicial ========== */
 const chatWindow = document.getElementById('chatWindow');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -128,18 +123,60 @@ const exportBtn = document.getElementById('exportBtn');
 const fileInput = document.getElementById('fileInput');
 const teachBtn = document.getElementById('teachBtn');
 const currentEmotion = document.getElementById('currentEmotion');
+<script>
+  let respostas = {
+    "olá": { resposta: "Olá! 😊 Como você está hoje?", data: new Date().toISOString() },
+    "bom dia": { resposta: "Bom dia! Que seu dia seja incrível! ☀️", data: new Date().toISOString() },
+    "boa tarde": { resposta: "Boa tarde! Espero que esteja aproveitando bem o dia! 🌤️", data: new Date().toISOString() },
+    "boa noite": { resposta: "Boa noite! Durma bem e tenha sonhos tranquilos. 🌙", data: new Date().toISOString() },
+    "como você está": { resposta: "Estou bem, obrigado! E você? 🤖", data: new Date().toISOString() },
+    "estou feliz": { resposta: "Que bom! 😄 Aproveite essa energia positiva!", data: new Date().toISOString() },
+    "estou triste": { resposta: "Sinto muito 😢 Espero que algo te anime em breve!", data: new Date().toISOString() },
+    "estou zangado": { resposta: "Respire fundo 😡 Tente se acalmar antes de agir.", data: new Date().toISOString() },
+    "quero um abraço": { resposta: "Aqui vai um abraço virtual! 🧡🤗", data: new Date().toISOString() },
+    "estou com fome": { resposta: "Que tal preparar algo delicioso? 🍽️", data: new Date().toISOString() },
+    "preciso ir ao banheiro": { resposta: "Ok! Não esqueça de se cuidar. 🚽", data: new Date().toISOString() },
+    "estou cansado": { resposta: "Faça uma pausa e descanse um pouco. 😴", data: new Date().toISOString() },
+    "estou ansioso": { resposta: "Respire fundo, conte até 10 e vá devagar. 🌿", data: new Date().toISOString() },
+    "me sinto sozinho": { resposta: "Estou aqui com você. 🤝", data: new Date().toISOString() },
+    "tenho medo": { resposta: "Está tudo bem sentir medo. Podemos falar sobre isso. 🛡️", data: new Date().toISOString() },
+    "não entendi": { resposta: "Tudo bem, posso explicar de outra forma. 🔄", data: new Date().toISOString() },
+    "preciso de ajuda": { resposta: "Claro! Estou aqui para ajudar. 💡", data: new Date().toISOString() },
+    "ensinar nova palavra": { resposta: "Você pode me ensinar novas palavras e respostas usando o painel de conhecimento ou respondendo quando eu pedir.", data: new Date().toISOString() },
+    "como usar": { resposta: "Você pode digitar, falar ou clicar nos emojis para se comunicar comigo. Se eu não souber algo, posso aprender com você! 💡", data: new Date().toISOString() },
+    "como se comunicar comigo": { resposta: "Você pode digitar, usar voz ou clicar nos emojis para interagir comigo. 🗣️", data: new Date().toISOString() },
+    "o que é autismo": { resposta: "Autismo é uma condição neurológica que afeta comunicação, comportamento e interação social de uma pessoa. 🧩", data: new Date().toISOString() },
+    "como lidar com autismo": { resposta: "Seja paciente, use rotinas, ajude a reconhecer emoções e ofereça instruções claras. 🌟", data: new Date().toISOString() },
+    "rotina diária": { resposta: "Vamos revisar juntos sua rotina: acordar, café da manhã, atividades, almoço, descanso e hobbies. ⏰", data: new Date().toISOString() },
+    "hora de acordar": { resposta: "Bom dia! É hora de levantar! 🌞", data: new Date().toISOString() },
+    "hora de dormir": { resposta: "Boa noite! É hora de descansar. 🌙", data: new Date().toISOString() },
+    "hora do lanche": { resposta: "É hora do lanche! 🥪", data: new Date().toISOString() },
+    "hora do banho": { resposta: "Hora do banho! 🛁", data: new Date().toISOString() },
+    "hora da escola": { resposta: "Prepare-se! É hora de estudar e aprender coisas novas. 📚", data: new Date().toISOString() },
+    "hora do recreio": { resposta: "É hora de brincar e se divertir! 🏃‍♂️", data: new Date().toISOString() },
+    "hora da medicação": { resposta: "Lembre-se de tomar sua medicação se necessário. 💊", data: new Date().toISOString() },
+    "hora de se acalmar": { resposta: "Vamos respirar fundo e relaxar por alguns minutos. 🌿", data: new Date().toISOString() }
+    // ✅ Aqui você pode continuar adicionando mais respostas até 200+
+  };
+  let localMode = false;           // se backend não responder, salva em localStorage
+  const SAVE_ENDPOINT = '/save';   // endpoint de salvamento no servidor
+  const DATA_ENDPOINT = '/data.json'; // endpoint de carregamento do servidor
 
-let respostas = {};      // estrutura: { chave: "resposta" } ou { chave: {resposta:"...", data:"..."} }
-let localMode = false;   // se backend não responder, salva em localStorage
-const SAVE_ENDPOINT = '/save';
-const DATA_ENDPOINT = '/data.json';
+  if(localMode){
+    respostas = JSON.parse(localStorage.getItem("respostas_tecla_offline") || "{}");
+  } else {
+    fetch(DATA_ENDPOINT)
+      .then(r => r.json())
+      .then(data => { respostas = data || {}; })
+      .catch(()=> {
+        localMode = true;
+        respostas = JSON.parse(localStorage.getItem("respostas_tecla_offline") || "{}");
+      });
+  }
 
-/* util: normalizar texto (minusculas sem acentos) */
 function normalize(text){
   return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 }
-
-/* carregar dados do backend (ou localStorage) */
 async function loadKnowledge(){
   try{
     const r = await fetch(DATA_ENDPOINT);
@@ -189,9 +226,6 @@ async function saveKnowledge(){
   }
   renderKnowledgeList();
 }
-
-/* ========== Emotion detection ========== */
-/* keywords by emotion */
 const emotionKeywords = {
   happy: ['feliz','alegre','otimo','bom','adoro','sorrir','maravilha','animado'],
   sad: ['triste','sinto','chorar','solitario','deprimido','nao consigo','sofrer'],
@@ -203,7 +237,6 @@ const emotionKeywords = {
   sleepy: ['sono','cansado','dormir','estou cansado','sonolento']
 };
 
-/* map emotion to CSS class and label */
 const emotionMap = {
   happy: {cls:'emotion-happy', label:'Feliz'},
   sad: {cls:'emotion-sad', label:'Triste'},
@@ -236,8 +269,6 @@ function createBotBubble(text, emotion='neutral'){
   div.textContent = text;
   return div;
 }
-
-/* ========== TTS (voz) ========== */
 function populateVoices(){
   const synth = window.speechSynthesis;
   const voices = synth.getVoices();
@@ -270,8 +301,6 @@ function speakText(text){
   utter.lang = 'pt-PT';
   synth.speak(utter);
 }
-
-/* ========== Chat logic (match + partial search + teach) ========== */
 function appendUser(text){
   const d = document.createElement('div');
   d.className = 'msg user';
@@ -363,7 +392,6 @@ teachBtn.addEventListener('click', ()=>{
 /* quick shortcut */
 function quick(text){ userInput.value = text; handleSend(text); }
 
-/* ========== Knowledge panel rendering & import/export ========== */
 function renderKnowledgeList(){
   knowledgeList.innerHTML = '';
   const keys = Object.keys(respostas).sort();
