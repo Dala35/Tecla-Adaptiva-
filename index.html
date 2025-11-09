@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TECLA Adapta PRIME – IA Inclusiva (Otimizada)</title>
+  <meta name="description" content="TECLA Adapta PRIME — assistente conversacional inclusivo focado em comunicação alternativa e aumentativa." />
+  <style>
+    :root{
+      --bg: #f2f8ff;
+      --header: #005b99;
+      --nav: #007acc;
+      --primary: #0077cc;
+      --muted: #666;
+      --card: #ffffff;
+      --bot-bg: #fff3cd;
+      --user-bg: #d9edf7;
+      --radius: 12px;
+      --glass: rgba(255,255,255,0.6);
+      --focus: 3px solid rgba(0,119,204,0.18);
+    }
+
+    /* Dark theme overrides */
+    body.dark{
+      --bg: #071025;
+      --header: #06283d;
+      --nav: #0b3a5b;
+      --primary: #1e90ff;
+      --card: #0b1220;
+      --bot-bg: #143047;
+      --user-bg: #0f2b3b;
+      color: #e6eef8;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;font-size:16px;background:var(--bg);color:inherit}
+
+    header{background:linear-gradient(90deg,var(--header),rgba(0,91,153,0.9));color:white;padding:1rem;display:flex;align-items:center;gap:1rem}
+    header h1{margin:0;font-size:1.1rem}
+    header small{opacity:0.9;font-size:0.85rem}
+
+    nav{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 1rem;background:var(--nav);gap:1rem;flex-wrap:wrap}
+    nav .left, nav .right{display:flex;gap:0.5rem;align-items:center}
+    nav button, nav select{background:transparent;border:none;color:white;padding:0.4rem 0.7rem;border-radius:8px;cursor:pointer}
+    nav button:hover, nav select:hover{background:rgba(255,255,255,0.07)}
+
+    main.app{display:flex;flex-direction:column;height:calc(100vh - 140px);padding:1rem;gap:1rem}
+
+    .panel{display:flex;gap:1rem;flex:1;align-items:stretch}
+    .left{flex:2;display:flex;flex-direction:column;gap:0.75rem}
+    .right{flex:1;min-width:260px}
+
+    .chat-container{background:var(--card);border-radius:16px;padding:1rem;box-shadow:0 6px 20px rgba(0,0,0,0.06);display:flex;flex-direction:column;gap:0.75rem;overflow:auto}
+    .messages{display:flex;flex-direction:column;gap:0.5rem}
+
+    .msg{max-width:78%;padding:0.75rem;border-radius:var(--radius);line-height:1.4;word-break:break-word}
+    .msg.bot{align-self:flex-start;background:var(--bot-bg);box-shadow:0 1px 2px rgba(0,0,0,0.03)}
+    .msg.user{align-self:flex-end;background:var(--user-bg)}
+
+    .meta{font-size:0.8rem;color:var(--muted);margin-bottom:0.25rem}
+
+    footer.composer{display:flex;gap:0.5rem;align-items:center;padding:0.5rem;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.4),transparent)}
+    .composer input[type='text']{flex:1;padding:0.6rem;border-radius:10px;border:1px solid rgba(0,0,0,0.1);outline:none}
+    .composer button{padding:0.55rem 0.8rem;border-radius:10px;border:none;background:var(--primary);color:white;cursor:pointer}
+
+    .controls{display:flex;flex-direction:column;gap:0.6rem;background:var(--card);padding:0.8rem;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.06)}
+
+    label{font-size:0.9rem}
+    select,input,textarea{padding:0.5rem;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
+
+    .small{font-size:0.85rem;color:var(--muted)}
+
+    /* animations */
+    .msg{transform:translateY(6px);opacity:0;transition:all 260ms cubic-bezier(.2,.9,.3,1)}
+    .msg.show{transform:none;opacity:1}
+
+    /* responsive */
+    @media (max-width:900px){.panel{flex-direction:column}.right{order:2}}    
+
+    /* accessibility focus */
+    button:focus,select:focus,input:focus{outline:var(--focus)}
+
+    /* quick reactions */
+    .reactions{display:flex;gap:0.4rem;flex-wrap:wrap}
+    .reaction-btn{padding:0.45rem;border-radius:8px;border:none;cursor:pointer;background:var(--primary);color:white}
+
+    /* teach modal */
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:30;}
+    .modal .card{background:var(--card);padding:1rem;border-radius:12px;min-width:320px}
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;flex-direction:column">
+      <h1>TECLA Adapta PRIME</h1>
+      <small>Assistente inclusivo — Criador: Dala De Carvalho</small>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center">
+      <button id="themeBtn" title="Alternar tema">🌓 Tema</button>
+      <button id="exportBtn" title="Exportar respostas">⬇️ Exportar</button>
+      <button id="importBtn" title="Importar respostas">⬆️ Importar</button>
+      <input id="importFile" type="file" accept="application/json" style="display:none">
+    </div>
+  </header>
+
+  <nav>
+    <div class="left">
+      <button data-tab="chat" class="tabBtn">💬 Conversar</button>
+      <button data-tab="sobre" class="tabBtn">ℹ️ Sobre</button>
+      <button data-tab="ajuda" class="tabBtn">🧭 Ajuda</button>
+    </div>
+    <div class="right">
+      <label for="perfilSelect" class="small" style="color:white;margin-right:6px">Perfil</label>
+      <select id="perfilSelect" aria-label="Selecionar perfil">
+        <option value="padrao">Padrão</option>
+        <option value="joao">João</option>
+        <option value="maria">Maria</option>
+      </select>
+    </div>
+  </nav>
+
+  <main class="app">
+    <div class="panel">
+      <section class="left">
+        <div id="chatTab" class="chat-container" aria-live="polite">
+          <div class="messages" id="messages" role="log"></div>
+          <div class="composer" style="margin-top:0.6rem">
+            <input id="userInput" type="text" aria-label="Digite ou fale aqui" placeholder="Digite ou fale aqui... (Enter para enviar)" />
+            <button id="sendBtn">Enviar</button>
+            <button id="speakBtn" title="Falar">🎙️</button>
+          </div>
+        </div>
+
+        <div id="sobreTab" style="display:none;background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.04)">
+          <h2>Sobre o TECLA</h2>
+          <p>TECLA Adapta PRIME é um assistente conversacional focado em apoiar pessoas com dificuldades de comunicação. Desenvolvido por Dala De Carvalho.</p>
+        </div>
+
+        <div id="ajudaTab" style="display:none;background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.04)">
+          <h2>Como Usar</h2>
+          <ul>
+            <li>Digite ou pressione 🎙️ para falar.</li>
+            <li>Se o TECLA não souber, poderá ensiná-lo manualmente.</li>
+            <li>Exporte/importe o banco de respostas entre dispositivos.</li>
+          </ul>
+        </div>
+
+      </section>
+
+      <aside class="right">
+        <div class="controls">
+          <div>
+            <label for="vozSelect">Voz (SpeechSynthesis)</label>
+            <select id="vozSelect" aria-label="Selecionar voz"></select>
+          </div>
+          <div>
+            <label for="rate">Velocidade: <span id="rateVal">1.0</span></label>
+            <input id="rate" type="range" min="0.5" max="2" step="0.1" value="1">
+          </div>
+          <div>
+            <label for="pitch">Tom: <span id="pitchVal">1.0</span></label>
+            <input id="pitch" type="range" min="0.5" max="2" step="0.1" value="1">
+          </div>
+
+          <div>
+            <label>Reações Rápidas</label>
+            <div class="reactions" id="reactions">
+              <button class="reaction-btn" data-text="🙂 Estou feliz">🙂</button>
+              <button class="reaction-btn" data-text="😢 Estou triste">😢</button>
+              <button class="reaction-btn" data-text="😡 Estou zangado">😡</button>
+              <button class="reaction-btn" data-text="🧡 Quero um abraço">🧡</button>
+              <button class="reaction-btn" data-text="🍽️ Estou com fome">🍽️</button>
+              <button class="reaction-btn" data-text="🚽 Preciso ir ao banheiro">🚽</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="searchInput">Busca rápida (abrir Google)</label>
+            <div style="display:flex;gap:0.4rem">
+              <input id="searchInput" placeholder="Pesquisar..." />
+              <button id="searchBtn">🔍</button>
+            </div>
+          </div>
+
+          <div class="small">Status de Conexão: <span id="netStatus">—</span></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- teach modal -->
+  <div id="teachModal" class="modal" style="display:none" role="dialog" aria-modal="true">
+    <div class="card">
+      <h3>Ensine o TECLA</h3>
+      <p id="teachQ" class="small"></p>
+      <textarea id="teachA" rows="4" style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid rgba(0,0,0,0.08)"></textarea>
+      <div style="display:flex;gap:0.5rem;margin-top:0.6rem;justify-content:flex-end">
+        <button id="teachCancel">Cancelar</button>
+        <button id="teachSave">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="backupFile" accept="application/json" style="display:none" />
+
+<script>
+// =====================
+// Config e Estado
+// =====================
+const STORAGE_PREFIX = 'tecla_v1_';
+let perfilAtual = 'padrao';
+let respostas = loadRespostas(perfilAtual);
+const messagesEl = document.getElementById('messages');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const speakBtn = document.getElementById('speakBtn');
+const vozSelect = document.getElementById('vozSelect');
+const rateInput = document.getElementById('rate');
+const pitchInput = document.getElementById('pitch');
+const rateVal = document.getElementById('rateVal');
+const pitchVal = document.getElementById('pitchVal');
+const teachModal = document.getElementById('teachModal');
+const teachQ = document.getElementById('teachQ');
+const teachA = document.getElementById('teachA');
+
+// =====================
+// Utilitários de armazenamento (localStorage simples; adaptável a IndexedDB)
+// =====================
+function keyFor(perfil){ return STORAGE_PREFIX + perfil; }
+function loadRespostas(perfil){ try{ const raw = localStorage.getItem(keyFor(perfil)); return raw ? JSON.parse(raw) : {}; }catch(e){console.error(e); return {}; } }
+function saveRespostas(){ try{ localStorage.setItem(keyFor(perfilAtual), JSON.stringify(respostas)); }catch(e){console.error('Erro salvar',e); } }
+
+function mergeIntoRespostas(novas){ let mudou=false; for(const k in novas){ if(!respostas[k]){ respostas[k]=novas[k]; mudou=true; } }
+ if(mudou) saveRespostas(); }
+
+// =====================
+// UI Helpers
+// =====================
+function addMessage(text, sender='bot', meta=''){
+  const el = document.createElement('div');
+  el.className = 'msg ' + (sender==='user' ? 'user' : 'bot');
+  if(meta) el.innerHTML = `<div class="meta">${meta}</div>` + escapeHtml(text);
+  else el.innerHTML = escapeHtml(text);
+  messagesEl.appendChild(el);
+  // trigger animation
+  requestAnimationFrame(()=>el.classList.add('show'));
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function escapeHtml(s){ return (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// =====================
+// Fala (SpeechSynthesis)
+// =====================
+function populateVoices(){ const synth = window.speechSynthesis; const voices = synth.getVoices(); vozSelect.innerHTML='';
+  voices.filter(v=>v.lang.includes('pt') || v.lang.includes('PT')||v.lang.includes('pt-')).forEach(v=>{
+    const opt = document.createElement('option'); opt.value=v.name; opt.textContent=`${v.name} — ${v.lang}`; vozSelect.appendChild(opt);
+  });
+  if(!vozSelect.value && vozSelect.options.length) vozSelect.selectedIndex = 0;
+}
+window.speechSynthesis.onvoiceschanged = populateVoices;
+populateVoices();
+
+function falar(texto){ try{
+  const synth = window.speechSynthesis; if(!synth) return;
+  const u = new SpeechSynthesisUtterance(texto);
+  const voz = vozSelect.value && synth.getVoices().find(v=>v.name===vozSelect.value);
+  if(voz) u.voice = voz;
+  u.rate = parseFloat(rateInput.value || 1);
+  u.pitch = parseFloat(pitchInput.value || 1);
+  // linguagem PT-BR/PT-PT detection fallback
+  u.lang = (u.voice && u.voice.lang) ? u.voice.lang : 'pt-PT';
+  synth.cancel(); // evita sobreposição
+  synth.speak(u);
+ }catch(e){console.error('fala',e);} }
+
+rateInput.addEventListener('input', ()=> rateVal.textContent = rateInput.value);
+pitchInput.addEventListener('input', ()=> pitchVal.textContent = pitchInput.value);
+
+// =====================
+// Comandos e processamento
+// =====================
+async function processInput(raw){
+  const text = (raw||'').trim(); if(!text) return;
+  addMessage('👤 ' + text,'user');
+
+  const key = text.toLowerCase();
+
+  // reconhecimento do criador
+  if(/\bdala\b/i.test(text)){
+    const r = '🤖 Eu reconheço o Criador Dala De Carvalho! Obrigado por me dar vida.';
+    addMessage(r,'bot'); falar(r); return;
+  }
+
+  // respostas aprendidas
+  if(respostas[key]){
+    const r = respostas[key].resposta || respostas[key];
+    addMessage('🤖 ' + r,'bot'); falar(r);
+    return;
+  }
+
+  // clima (exemplo simples — delega a função específica)
+  if(/clima|temperatura/i.test(text)){
+    verificarClima(); return;
+  }
+
+  // tradução rápida (com sintaxe: traduzir: texto => pt/en/fr)
+  if(/traduzir para/i.test(text) || /traduzir:/i.test(text)){
+    // parse simples
+    const partes = text.split(/traduzir para|traduzir:/i);
+    const frase = (partes[0].replace(/traduzir/i,'') || partes[1] || '').trim();
+    const destino = (partes[1]||'en').split(' ').pop();
+    traduzirTexto(frase, destino || 'en'); return;
+  }
+
+  // buscar (abrir google)
+  if(/pesquise sobre|pesquisar|encontre informações sobre/i.test(text)){
+    const q = text.replace(/pesquise sobre|pesquisar|encontre informações sobre/ig,'').trim();
+    if(q){ window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`,'_blank'); addMessage(`🔍 Buscando: ${q}`,'bot'); falar('Buscando ' + q); }
+    else { addMessage('❓ Sobre o que deseja buscar?','bot'); falar('Sobre o que deseja buscar?'); }
+    return;
+  }
+
+  // definição (ex.: "o que é alegria")
+  if(/^o que é |^o que significa |^explique |^defina /i.test(text)){
+    const palavra = text.replace(/^o que é |^o que significa |^explique |^defina /i,'').trim();
+    if(palavra) { consultarDicionario(palavra); } else { addMessage('❓ Qual palavra?','bot'); falar('Qual palavra?'); }
+    return;
+  }
+
+  // se não reconhece: oferecer ensino por modal
+  addMessage('❓ Não sei responder a isso ainda. Deseja ensinar-me?','bot'); falar('Não sei responder a isso ainda. Deseja ensinar-me?');
+  openTeachModal(text);
+}
+
+// =====================
+// Teach modal
+// =====================
+function openTeachModal(pergunta){ teachQ.textContent = pergunta; teachA.value = ''; teachModal.style.display='flex'; teachA.focus(); }
+function closeTeachModal(){ teachModal.style.display='none'; }
+
+document.getElementById('teachCancel').addEventListener('click', ()=>{ closeTeachModal(); });
+document.getElementById('teachSave').addEventListener('click', ()=>{
+  const resp = teachA.value.trim(); const q = teachQ.textContent.trim(); if(!resp) return alert('Por favor escreva uma resposta.');
+  const key = q.toLowerCase(); respostas[key] = { resposta: resp, data: new Date().toISOString(), origem: perfilAtual };
+  saveRespostas(); addMessage('✔️ Aprendi: ' + resp,'bot'); falar(resp); closeTeachModal();
+});
+
+// =====================
+// Eventos UI
+// =====================
+sendBtn.addEventListener('click', ()=>{ processInput(userInput.value); userInput.value=''; userInput.focus(); });
+userInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendBtn.click(); } });
+
+// reactions
+document.getElementById('reactions').addEventListener('click',(ev)=>{
+  const btn = ev.target.closest('button[data-text]'); if(!btn) return; const t = btn.dataset.text; userInput.value = t; sendBtn.click();
+});
+
+// tabs
+document.querySelectorAll('.tabBtn').forEach(b=>b.addEventListener('click',()=>{
+  const tab = b.getAttribute('data-tab'); document.getElementById('chatTab').style.display = tab==='chat' ? 'block' : 'none';
+  document.getElementById('sobreTab').style.display = tab==='sobre' ? 'block' : 'none';
+  document.getElementById('ajudaTab').style.display = tab==='ajuda' ? 'block' : 'none';
+}));
+
+// perfil
+document.getElementById('perfilSelect').addEventListener('change', (e)=>{
+  perfilAtual = e.target.value; respostas = loadRespostas(perfilAtual); addMessage('🔄 Perfil alterado para: ' + perfilAtual,'bot');
+});
+
+// theme
+document.getElementById('themeBtn').addEventListener('click', ()=>{ document.body.classList.toggle('dark'); });
+
+// quick search
+document.getElementById('searchBtn').addEventListener('click', ()=>{
+  const q = document.getElementById('searchInput').value.trim(); if(!q) return; window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`,'_blank');
+});
+
+// voz controls
+speakBtn.addEventListener('click', ()=> startListening());
+
+// export/import
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(respostas,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tecla_${perfilAtual}.json`; a.click();
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+
+document.getElementById('importFile').addEventListener('change', (ev)=>{
+  const f = ev.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ()=>{
+    try{ const obj = JSON.parse(r.result); mergeIntoRespostas(obj); addMessage('✔️ Importação efetuada (mesclada).','bot'); }
+    catch(e){ alert('Arquivo inválido'); }
+  }; r.readAsText(f);
+});
+
+// backupFile for compatibility
+document.getElementById('backupFile').addEventListener('change', (ev)=>{
+  const f = ev.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ()=>{
+    try{ const obj = JSON.parse(r.result); mergeIntoRespostas(obj); addMessage('✔️ Backup restaurado.','bot'); }
+    catch(e){ alert('Erro ao importar arquivo.'); }
+  }; r.readAsText(f);
+});
+
+// =====================
+// Voz -> SpeechRecognition (navegadores compatíveis)
+// =====================
+function startListening(){ const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if(!SR) return alert('Seu navegador não suporta reconhecimento de voz.');
+  const r = new SR(); r.lang = 'pt-PT'; r.interimResults = false; r.maxAlternatives = 1;
+  r.onresult = (ev)=>{ const t = ev.results[0][0].transcript; userInput.value = t; processInput(t); };
+  r.onerror = (e)=>{ console.warn('sr err',e); addMessage('⚠️ Erro no reconhecimento de voz.','bot'); };
+  r.start(); addMessage('🎙️ Ouvido ligado...','bot');
+}
+
+// =====================
+// Módulo Clima (exemplo usando OpenWeather — substitua chave)
+// =====================
+async function verificarClima(cidade='Cuito'){ const chaveAPI = '';// coloque sua chave aqui
+  if(!chaveAPI){ addMessage('⚠️ Módulo de clima não configurado (sem chave).','bot'); return; }
+  try{
+    const r = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cidade)}&units=metric&lang=pt_br&appid=${chaveAPI}`);
+    const j = await r.json(); if(j && j.main){ const t = `🌦️ Em ${cidade}: ${j.weather[0].description}, ${j.main.temp}°C (sensação ${j.main.feels_like}°C)`; addMessage(t,'bot'); falar(t); } else addMessage('❌ Não consegui obter clima.','bot');
+  }catch(e){ addMessage('⚠️ Erro ao consultar clima.','bot'); }
+}
+
+// =====================
+// Dicionário (dictionaryapi.dev) — nota: endpoint em português pode variar
+// =====================
+async function consultarDicionario(palavra){ try{
+  const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/pt/${encodeURIComponent(palavra)}`);
+  const j = await r.json(); if(Array.isArray(j) && j[0] && j[0].meanings){ const def = j[0].meanings[0].definitions[0].definition; const resp = `🔍 ${palavra}: ${def}`; addMessage(resp,'bot'); falar(resp); } else { addMessage('❓ Não encontrei definição para ' + palavra,'bot'); }
+ }catch(e){ addMessage('⚠️ Erro ao consultar dicionário.','bot'); }
+}
+
+// =====================
+// Tradução simples via MyMemory
+// =====================
+async function traduzirTexto(frase, idiomaDestino='en'){ try{
+  if(!frase) return addMessage('❓ Forneça o texto para tradução.','bot');
+  const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(frase)}&langpair=pt|${encodeURIComponent(idiomaDestino)}`);
+  const j = await r.json(); if(j && j.responseData){ const t = `🌍 Tradução (${idiomaDestino}): ${j.responseData.translatedText}`; addMessage(t,'bot'); falar(t); }
+ }catch(e){ addMessage('❌ Não foi possível traduzir.','bot'); }
+}
+
+// =====================
+// Rede (online/offline)
+// =====================
+function updateNetStatus(){ document.getElementById('netStatus').textContent = navigator.onLine ? 'Online' : 'Offline'; }
+window.addEventListener('online', ()=>{ updateNetStatus(); addMessage('✅ Conexão restabelecida.','bot'); });
+window.addEventListener('offline', ()=>{ updateNetStatus(); addMessage('⚠️ Conexão perdida. Modo offline ativado.','bot'); });
+updateNetStatus();
+
+// =====================
+// Segurança: evitar chaves em código e proteger funções sensíveis
+// =====================
+// Nota: neste arquivo de exemplo não guardamos chaves. Para integrações (OpenAI, OpenWeather etc), crie um backend seguro.
+
+// =====================
+// Inicialização / Mensagem de boas vindas
+// =====================
+(function init(){ addMessage('🤖 Olá — sou o TECLA Adapta PRIME. Posso ajudar?','bot'); })();
+
+// =====================
+// Pequenas funções utilitárias
+// =====================
+function saveToFile(obj, filename='data.json'){ const blob = new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); }
+
+</script>
+</body>
+</html>
