@@ -1,4 +1,152 @@
 {
+    "perfil": {
+
+    "id_usuario": "A12345",
+
+    "nome": "João Silva",
+
+    "idade": 10,
+
+    "genero": "masculino",
+
+    "diagnostico": {
+
+      "tipo": "TEA nível 2",
+
+      "data_diagnostico": "2020-06-15",
+
+      "profissional": "Dra. Ana Costa"
+
+    },
+
+    "preferencias": {
+
+      "linguagem": "português",
+
+      "voz_sintetizada": true,
+
+      "tema_visual": "alto contraste",
+
+      "comunicacao": "pictogramas"
+
+    }
+
+  },
+
+  "sensibilidades": {
+
+    "auditiva": {
+
+      "nivel": "alta",
+
+      "gatilhos": ["aspirador", "buzinas", "gritos"],
+
+      "estrategias": ["usar abafadores", "alerta visual antes de barulho"]
+
+    },
+
+    "visual": {
+
+      "nivel": "média",
+
+      "gatilhos": ["luzes piscando", "cores muito fortes"],
+
+      "estrategias": ["tema escuro", "iluminação suave"]
+
+    },
+
+    "tátil": {
+
+      "nivel": "baixa",
+
+      "gatilhos": ["roupas ásperas"],
+
+      "estrategias": ["usar algodão", "permitir escolha de roupas"]
+
+    }
+
+  },
+
+  "rotinas": [
+
+    {
+
+      "nome": "Rotina Matinal",
+
+      "descricao": "Passos para começar o dia",
+
+      "horario_inicio": "07:00",
+
+      "atividades": [
+
+        {"ordem": 1, "tarefa": "Escovar os dentes", "tipo": "auto-cuidado", "tempo_estimado_min": 5},
+
+        {"ordem": 2, "tarefa": "Tomar café da manhã", "tipo": "alimentação", "tempo_estimado_min": 15},
+
+        {"ordem": 3, "tarefa": "Vestir uniforme", "tipo": "auto-cuidado", "tempo_estimado_min": 10}
+
+      ]
+
+    },
+
+    {
+
+      "nome": "Terapia ABA",
+
+      "descricao": "Sessão com terapeuta comportamental",
+
+      "horario_inicio": "15:00",
+
+      "atividades": [
+
+        {"ordem": 1, "tarefa": "Saudações e preparação", "tipo": "social"},
+
+        {"ordem": 2, "tarefa": "Atividade motora fina", "tipo": "motricidade"},
+
+        {"ordem": 3, "tarefa": "Encerramento e feedback", "tipo": "social"}
+
+      ]
+
+    }
+
+  ],
+
+  "comunicacao_suporte": {
+
+    "método_principal": "PECS",
+
+    "frases_comuns": [
+
+      {"categoria": "necessidades", "frase": "Quero ir ao banheiro"},
+
+      {"categoria": "emoções", "frase": "Estou feliz"},
+
+      {"categoria": "emoções", "frase": "Preciso de um tempo"}
+
+    ],
+
+    "símbolos_usados": ["📖", "🍎", "🚽", "🙂", "😣"]
+
+  },
+
+  "observacoes": {
+
+    "data_ultima": "2025-11-09",
+
+    "autor": "Terapeuta João Pereira",
+
+    "notas": "João reagiu bem à nova rotina visual. Reduziu reações auditivas durante a sessão."
+
+  },
+
+  "metadados": {
+
+    "versao_schema": "1.0",
+
+    "ultima_atualizacao": "2025-11-10T10:45:00Z",
+
+    "consentimento_dados": true }
+
   "bom dia": "Olá! Que bom ver você aqui hoje. Deseja conversar ou aprender algo novo?",
   "como está": "Estou bem, e você? Se quiser, posso ajudar a organizar o seu dia.",
   "o que é autismo": "O autismo é uma forma única de perceber o mundo. As pessoas autistas têm maneiras diferentes de se comunicar e sentir, e isso é parte da diversidade humana.",
